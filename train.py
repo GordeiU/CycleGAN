@@ -69,7 +69,7 @@ def plot_output(path, x, y):
 
 def save_img_samples(batches_done):
     """Saves a generated sample from the test set"""
-    logging.info("batches_done ", batches_done)
+    logging.info(f"batches_done {batches_done}")
     imgs = next(iter(val_dataloader))
 
     Gen_AB.eval()
