@@ -46,7 +46,8 @@ u128, u64,c7s1-3
 
 
 class GeneratorResNet(nn.Module):
-    def __init__(self, input_shape, num_residual_blocks):
+    def __init__(self, input_shape, num_residual_blocks, name):
+        self.name = name
         super(GeneratorResNet, self).__init__()
 
         channels = input_shape[0]
@@ -126,7 +127,8 @@ We use leaky ReLUs with a slope of 0.2. The discriminator architecture is:" C64-
 
 
 class Discriminator(nn.Module):
-    def __init__(self, input_shape):
+    def __init__(self, input_shape, name):
+        self.name = name
         super(Discriminator, self).__init__()
 
         channels, height, width = input_shape

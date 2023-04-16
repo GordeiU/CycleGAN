@@ -22,6 +22,8 @@ import logging
 # Methods for Image DataLoader
 ########################################################
 
+TRAINED_MODEL_EXT = '.dat'
+TRAINED_MODEL_FORMAT = "{}" + TRAINED_MODEL_EXT
 
 def convert_to_rgb(image):
     rgb_image = Image.new("RGB", image.size)

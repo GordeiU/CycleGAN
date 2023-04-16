@@ -2,6 +2,7 @@ import numpy as np
 import itertools
 import time
 import datetime
+import uuid
 
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
@@ -67,7 +68,7 @@ def plot_output(path, x, y):
 # SAMPLING IMAGES
 ##############################################
 
-def save_img_samples(batches_done):
+def save_img_samples(epoch_path, epoch, batches_done):
     """Saves a generated sample from the test set"""
     logging.info(f"batches_done {batches_done}")
     imgs = next(iter(val_dataloader))
@@ -87,15 +88,16 @@ def save_img_samples(batches_done):
     # Arange images along y-axis
     image_grid = torch.cat((real_A, fake_B, real_B, fake_A), 1)
 
-    path = root_path + "/%s.png" % (batches_done)  # Path when running in Google Colab
+    path = os.path.join(epoch_path, f"{epoch}_{batches_done}.png")
 
-    # path =  '/kaggle/working' + "/%s.png" % (batches_done)    # Path when running inside Kaggle
     save_image(image_grid, path, normalize=False)
     return path
 
 ##############################################
 # Final Training Function
 ##############################################
+def save_model(model, epoch_path):
+    torch.save(model.state_dict(), os.path.join(epoch_path, TRAINED_MODEL_FORMAT.format(model.name)))
 
 def train(
     Gen_BA,
@@ -119,11 +121,17 @@ def train(
     lambda_id,
 ):
     # TRAINING
+    training_session_path = os.path.join(".", "checkpoints", uuid.uuid4())
+    os.mkdir(training_session_path)
+
     prev_time = time.time()
     for epoch in range(hp.epoch, n_epochs):
-        logging.info(f"Epoch {epoch}/{n_epochs}")
+        epoch_path = os.path.join(training_session_path, f"epoch{epoch}")
+        os.mkdir(epoch_path)
+
+        logging.info(f"Epoch {epoch + 1}/{n_epochs}")
         for i, batch in enumerate(train_dataloader):
-            logging.info(f"Step: {i}/{len(train_dataloader)}")
+            logging.info(f"Step: {i + 1}/{len(train_dataloader)}")
 
             logging.info("Set model input")
             real_A = Variable(batch["A"].type(Tensor))
@@ -305,13 +313,23 @@ def train(
 
             logging.info(text)
 
-            with open('log.txt', 'a') as log:
-                log.write(f"{text}\n")
-
             # If at sample interval save image
             if batches_done % sample_interval == 0:
-                clear_output()
-                plot_output(save_img_samples(batches_done), 30, 40)
+                with open('log.txt', 'a') as log:
+                    log.write(f"{text}\n")
+
+                # clear_output()
+                save_img_samples(epoch_path=epoch_path, epoch=epoch, batches_done=batches_done)
+                # plot_output(save_img_samples(batches_done), 30, 40)
+
+        if epoch % 1 == 0:
+            if not os.path.isdir(epoch_path):
+                os.mkdir(epoch_path)
+
+            save_model(Gen_AB, epoch_path=epoch_path)
+            save_model(Gen_BA, epoch_path=epoch_path)
+            save_model(Disc_A, epoch_path=epoch_path)
+            save_model(Disc_B, epoch_path=epoch_path)
 
 ##############################################
 # Execute the Final Training Function
@@ -397,11 +415,11 @@ if __name__ == "__main__":
     logging.info("Initializing generator and discriminator")
     ##############################################
 
-    Gen_AB = GeneratorResNet(input_shape, hp.num_residual_blocks)
-    Gen_BA = GeneratorResNet(input_shape, hp.num_residual_blocks)
+    Gen_AB = GeneratorResNet(input_shape, hp.num_residual_blocks, "Gen_AB")
+    Gen_BA = GeneratorResNet(input_shape, hp.num_residual_blocks, "Gen_BA")
 
-    Disc_A = Discriminator(input_shape)
-    Disc_B = Discriminator(input_shape)
+    Disc_A = Discriminator(input_shape, "Disc_A")
+    Disc_B = Discriminator(input_shape, "Disc_B")
 
     if cuda:
         Gen_AB = Gen_AB.cuda()
