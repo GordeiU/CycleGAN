@@ -336,7 +336,12 @@ if __name__ == "__main__":
 
     with open('log.txt', 'a') as log:
         log.write("test\n")
-    cuda = True if torch.cuda.is_available() else False
+
+    if torch.cuda.is_available():
+        cuda = True
+        torch.cuda.empty_cache()
+    else:
+        cuda = False
     logging.info("CUDA is activated" if cuda else "CUDA is not activated")
 
     """ So generally both torch.Tensor and torch.cuda.Tensor are equivalent. You can do everything you like with them both.
@@ -351,7 +356,7 @@ if __name__ == "__main__":
         dataset_test_mode="test",
         batch_size=4,
         lr=0.0002,
-        decay_start_epoch=100,
+        decay_start_epoch=2, # change later to 150
         b1=0.5,
         b2=0.999,
         n_cpu=8,
