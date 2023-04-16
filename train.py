@@ -299,9 +299,9 @@ def train(
             prev_time = time.time()
 
             text = "\r[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f, adv: %f, cycle: %f, identity: %f] ETA: %s" % (
-                epoch,
+                epoch+1,
                 n_epochs,
-                i,
+                i+1,
                 len(train_dataloader),
                 loss_D.item(),
                 loss_G.item(),
