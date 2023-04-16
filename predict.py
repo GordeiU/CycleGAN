@@ -68,17 +68,23 @@ if __name__ == "__main__":
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    img = Image.open(os.path.join(".", "images", "test_image_2.jpg"))
+    img = Image.open(os.path.join(".", "images", "test_image_0.jpg"))
     img = transform(img)
     img = Variable(img.type(Tensor)).to(device='cpu')
-    logging.info(img.shape)
-    Gen_AB(img)
-    # image_tensor = pil_to_model_tensor_transform(pil_loader(os.path.join(args.input, image_name))).to(net.device)
-    # net.my_test_single(
-    #     image_tensor=image_tensor,
-    #     image_name=image_name,
-    #     age_group=args.age,
-    #     bmi_group=args.bmi_group,
-    #     target=results_dest,
-    #     watermark=args.watermark
-    # )
+    img = img.unsqueeze(0)
+
+    result = Gen_AB(img)
+    logging.info("Image transformed")
+
+    result_dir = os.path.join(".", "result")
+
+    if not os.path.isdir(result_dir):
+        logging.info(f"Result dir created at: {result_dir}")
+        os.mkdir(result_dir)
+
+    try:
+        result_file_name = os.path.join(result_dir, "test_image_obese_0.jpg")
+        save_image(result, result_file_name, normalize=True)
+        logging.info(f"Result image saved to {result_file_name}")
+    except Exception as e:
+        logging.error(f"While saving result image: {e}")

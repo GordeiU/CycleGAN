@@ -4,3 +4,5 @@ CycleGAN_From_Scratch_PyTorch_FINAL_Entire_NB.ipynb
 .DS_Store
 data.zip
 checkpoints/
+result/
+images/
