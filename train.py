@@ -290,7 +290,7 @@ def train(
             )
             prev_time = time.time()
 
-            text = "\r[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f, adv: %f, cycle: %f, identity: %f] ETA: %s"% (
+            text = "\r[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f, adv: %f, cycle: %f, identity: %f] ETA: %s" % (
                 epoch,
                 n_epochs,
                 i,
