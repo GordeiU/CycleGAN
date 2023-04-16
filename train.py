@@ -121,7 +121,7 @@ def train(
     lambda_id,
 ):
     # TRAINING
-    training_session_path = os.path.join(".", "checkpoints", f"uuid.uuid4()")
+    training_session_path = os.path.join(".", "checkpoints", f"{uuid.uuid4()}")
     os.mkdir(training_session_path)
 
     prev_time = time.time()
@@ -330,6 +330,8 @@ def train(
             save_model(Gen_BA, epoch_path=epoch_path)
             save_model(Disc_A, epoch_path=epoch_path)
             save_model(Disc_B, epoch_path=epoch_path)
+
+            logging.info("Models saved")
 
 ##############################################
 # Execute the Final Training Function
