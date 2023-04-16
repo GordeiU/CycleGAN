@@ -306,6 +306,21 @@ def train(
                 )
             )
 
+            with open('log.txt', 'a') as log:
+                log.write("\r[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f, adv: %f, cycle: %f, identity: %f] ETA: %s\n"
+                          % (
+                            epoch,
+                            n_epochs,
+                            i,
+                            len(train_dataloader),
+                            loss_D.item(),
+                            loss_G.item(),
+                            loss_GAN.item(),
+                            loss_cycle.item(),
+                            loss_identity.item(),
+                            time_left,
+                            ))
+
             # If at sample interval save image
             if batches_done % sample_interval == 0:
                 clear_output()
@@ -316,6 +331,11 @@ def train(
 ##############################################
 
 if __name__ == "__main__":
+    with open('log.txt', 'a') as log:
+        log.write("test\n")
+
+    with open('log.txt', 'a') as log:
+        log.write("test\n")
     cuda = True if torch.cuda.is_available() else False
     logging.info("CUDA is activated" if cuda else "CUDA is not activated")
 
@@ -326,7 +346,7 @@ if __name__ == "__main__":
 
     hp = Hyperparameters(
         epoch=0,
-        n_epochs=200,
+        n_epochs=150,
         dataset_train_mode="train",
         dataset_test_mode="test",
         batch_size=4,
