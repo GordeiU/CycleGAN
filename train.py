@@ -77,6 +77,7 @@ def save_img_samples(epoch_path, epoch, batches_done):
     Gen_BA.eval()
 
     real_A = Variable(imgs["A"].type(Tensor))
+    logging.info(real_A.shape)
     fake_B = Gen_AB(real_A)
     real_B = Variable(imgs["B"].type(Tensor))
     fake_A = Gen_BA(real_B)
@@ -322,7 +323,7 @@ def train(
                 save_img_samples(epoch_path=epoch_path, epoch=epoch, batches_done=batches_done)
                 # plot_output(save_img_samples(batches_done), 30, 40)
 
-        if epoch % 1 == 0:
+        if epoch % 10 == 0:
             if not os.path.isdir(epoch_path):
                 os.mkdir(epoch_path)
 
@@ -352,12 +353,12 @@ if __name__ == "__main__":
 
     hp = Hyperparameters(
         epoch=0,
-        n_epochs=5, # change later to 150
+        n_epochs=150,
         dataset_train_mode="train",
         dataset_test_mode="test",
         batch_size=4,
         lr=0.0002,
-        decay_start_epoch=4,
+        decay_start_epoch=125,
         b1=0.5,
         b2=0.999,
         n_cpu=8,
