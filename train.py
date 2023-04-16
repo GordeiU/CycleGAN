@@ -290,36 +290,23 @@ def train(
             )
             prev_time = time.time()
 
-            logging.info(
-                "\r[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f, adv: %f, cycle: %f, identity: %f] ETA: %s"
-                % (
-                    epoch,
-                    n_epochs,
-                    i,
-                    len(train_dataloader),
-                    loss_D.item(),
-                    loss_G.item(),
-                    loss_GAN.item(),
-                    loss_cycle.item(),
-                    loss_identity.item(),
-                    time_left,
+            text = "\r[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f, adv: %f, cycle: %f, identity: %f] ETA: %s"% (
+                epoch,
+                n_epochs,
+                i,
+                len(train_dataloader),
+                loss_D.item(),
+                loss_G.item(),
+                loss_GAN.item(),
+                loss_cycle.item(),
+                loss_identity.item(),
+                time_left,
                 )
-            )
+
+            logging.info(text)
 
             with open('log.txt', 'a') as log:
-                log.write("\r[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f, adv: %f, cycle: %f, identity: %f] ETA: %s\n"
-                          % (
-                            epoch,
-                            n_epochs,
-                            i,
-                            len(train_dataloader),
-                            loss_D.item(),
-                            loss_G.item(),
-                            loss_GAN.item(),
-                            loss_cycle.item(),
-                            loss_identity.item(),
-                            time_left,
-                            ))
+                log.write(f"{text}\n")
 
             # If at sample interval save image
             if batches_done % sample_interval == 0:
@@ -331,12 +318,6 @@ def train(
 ##############################################
 
 if __name__ == "__main__":
-    with open('log.txt', 'a') as log:
-        log.write("test\n")
-
-    with open('log.txt', 'a') as log:
-        log.write("test\n")
-
     if torch.cuda.is_available():
         cuda = True
         torch.cuda.empty_cache()
