@@ -126,7 +126,7 @@ def train(
 
     prev_time = time.time()
     for epoch in range(hp.epoch, n_epochs):
-        epoch_path = os.path.join(training_session_path, f"epoch{epoch}")
+        epoch_path = os.path.join(training_session_path, f"epoch{epoch + 1}")
         os.mkdir(epoch_path)
 
         logging.info(f"Epoch {epoch + 1}/{n_epochs}")
