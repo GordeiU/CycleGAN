@@ -332,12 +332,12 @@ if __name__ == "__main__":
 
     hp = Hyperparameters(
         epoch=0,
-        n_epochs=150,
+        n_epochs=2, # change later to 150
         dataset_train_mode="train",
         dataset_test_mode="test",
         batch_size=4,
         lr=0.0002,
-        decay_start_epoch=2, # change later to 150
+        decay_start_epoch=150,
         b1=0.5,
         b2=0.999,
         n_cpu=8,
