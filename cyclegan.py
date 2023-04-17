@@ -1,14 +1,15 @@
-import torch.nn as nn
-import torch.nn.functional as F
+import logging
 
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import figure
+import torch.nn as nn
+import torch.nn.functional as F
 from IPython.display import clear_output
-
-from torch.utils.data import Dataset
+from matplotlib.pyplot import figure
 from PIL import Image
+from torch.utils.data import Dataset
 
-import logging
+logging.getLogger().setLevel(logging.INFO)
+logging.basicConfig(format="%(asctime)s: [%(levelname)s]: %(message)s")
 
 ##############################################
 # Residual block with two convolution layers.
@@ -46,7 +47,7 @@ u128, u64,c7s1-3
 
 
 class GeneratorResNet(nn.Module):
-    def __init__(self, input_shape, num_residual_blocks, name):
+    def __init__(self, input_shape, num_residual_blocks, name="Generator"):
         self.name = name
         super(GeneratorResNet, self).__init__()
 
