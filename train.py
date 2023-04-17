@@ -1,38 +1,26 @@
-import numpy as np
-import itertools
-import time
 import datetime
+import itertools
+import logging
+import time
 import uuid
 
-import torchvision.transforms as transforms
-from torchvision.utils import save_image
-from torch.utils.data import DataLoader
-from torch.autograd import Variable
-from torchvision.utils import make_grid
-import torch.nn.functional as F
-import torch
-
-from matplotlib.pyplot import figure
-from IPython.display import clear_output
-
-from PIL import Image
 import matplotlib.image as mpimg
+import numpy as np
+import torch
+import torch.nn.functional as F
+import torchvision.transforms as transforms
+from IPython.display import clear_output
+from matplotlib.pyplot import figure
+from PIL import Image
+from torch.autograd import Variable
+from torch.utils.data import DataLoader
+from torchvision.utils import make_grid, save_image
 
-from utils import *
 from cyclegan import *
-
-import logging
+from utils import *
 
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(format="%(asctime)s: [%(levelname)s]: %(message)s")
-
-##############################################
-# Defining all hyperparameters
-##############################################
-
-class Hyperparameters(object):
-    def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)
 
 ########################################################
 # Methods for Image Visualization
@@ -55,7 +43,7 @@ def show_img(img, size=10):
 # plt.imshow(pytorch_tensor_image.permute(1, 2, 0))
 
 def to_img(x):
-    x = x.view(x.size(0) * 2, hp.channels, hp.img_size, hp.img_size)
+    x = x.view(x.size(0) * 2, HYPERPARAMETERS.channels, HYPERPARAMETERS.img_size, HYPERPARAMETERS.img_size)
     return x
 
 def plot_output(path, x, y):
@@ -126,7 +114,7 @@ def train(
     os.mkdir(training_session_path)
 
     prev_time = time.time()
-    for epoch in range(hp.epoch, n_epochs):
+    for epoch in range(HYPERPARAMETERS.epoch, n_epochs):
         epoch_path = os.path.join(training_session_path, f"epoch{epoch + 1}")
         os.mkdir(epoch_path)
 
@@ -351,26 +339,6 @@ if __name__ == "__main__":
     Of course operations on a CPU Tensor are computed with CPU while operations for the GPU / CUDA Tensor are computed on GPU. """
     Tensor = torch.cuda.FloatTensor if cuda else torch.Tensor
 
-    hp = Hyperparameters(
-        epoch=0,
-        n_epochs=150,
-        dataset_train_mode="train",
-        dataset_test_mode="test",
-        batch_size=4,
-        lr=0.0002,
-        decay_start_epoch=125,
-        b1=0.5,
-        b2=0.999,
-        n_cpu=8,
-        img_size=128,
-        channels=3,
-        n_critic=5,
-        sample_interval=100,
-        num_residual_blocks=19,
-        lambda_cyc=10.0,
-        lambda_id=5.0,
-    )
-
     ##############################################
     logging.info("Setting Root Path for Dataset")
     ##############################################
@@ -382,19 +350,19 @@ if __name__ == "__main__":
     logging.info("Defining Image Transforms to apply")
     ##############################################
     transforms_ = [
-        transforms.Resize((hp.img_size, hp.img_size), Image.BICUBIC),
+        transforms.Resize((HYPERPARAMETERS.img_size, HYPERPARAMETERS.img_size), Image.BICUBIC),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ]
 
     train_dataloader = DataLoader(
-        ImageDataset(root_path, mode=hp.dataset_train_mode, transforms_=transforms_),
-        batch_size=hp.batch_size,
+        ImageDataset(root_path, mode=HYPERPARAMETERS.dataset_train_mode, transforms_=transforms_),
+        batch_size=HYPERPARAMETERS.batch_size,
         shuffle=True,
         num_workers=1,
     )
     val_dataloader = DataLoader(
-        ImageDataset(root_path, mode=hp.dataset_test_mode, transforms_=transforms_),
+        ImageDataset(root_path, mode=HYPERPARAMETERS.dataset_test_mode, transforms_=transforms_),
         batch_size=16,
         shuffle=True,
         num_workers=1,
@@ -412,14 +380,14 @@ if __name__ == "__main__":
 
     criterion_identity = torch.nn.L1Loss()
 
-    input_shape = (hp.channels, hp.img_size, hp.img_size)
+    input_shape = (HYPERPARAMETERS.channels, HYPERPARAMETERS.img_size, HYPERPARAMETERS.img_size)
 
     ##############################################
     logging.info("Initializing generator and discriminator")
     ##############################################
 
-    Gen_AB = GeneratorResNet(input_shape, hp.num_residual_blocks, "Gen_AB")
-    Gen_BA = GeneratorResNet(input_shape, hp.num_residual_blocks, "Gen_BA")
+    Gen_AB = GeneratorResNet(input_shape, HYPERPARAMETERS.num_residual_blocks, "Gen_AB")
+    Gen_BA = GeneratorResNet(input_shape, HYPERPARAMETERS.num_residual_blocks, "Gen_BA")
 
     Disc_A = Discriminator(input_shape, "Disc_A")
     Disc_B = Discriminator(input_shape, "Disc_B")
@@ -458,29 +426,29 @@ if __name__ == "__main__":
     ##############################################
     optimizer_G = torch.optim.Adam(
         itertools.chain(Gen_AB.parameters(), Gen_BA.parameters()),
-        lr=hp.lr,
-        betas=(hp.b1, hp.b2),
+        lr=HYPERPARAMETERS.lr,
+        betas=(HYPERPARAMETERS.b1, HYPERPARAMETERS.b2),
     )
-    optimizer_Disc_A = torch.optim.Adam(Disc_A.parameters(), lr=hp.lr, betas=(hp.b1, hp.b2))
+    optimizer_Disc_A = torch.optim.Adam(Disc_A.parameters(), lr=HYPERPARAMETERS.lr, betas=(HYPERPARAMETERS.b1, HYPERPARAMETERS.b2))
 
-    optimizer_Disc_B = torch.optim.Adam(Disc_B.parameters(), lr=hp.lr, betas=(hp.b1, hp.b2))
+    optimizer_Disc_B = torch.optim.Adam(Disc_B.parameters(), lr=HYPERPARAMETERS.lr, betas=(HYPERPARAMETERS.b1, HYPERPARAMETERS.b2))
 
 
     ##############################################
     logging.info("Learning rate update schedulers")
     ##############################################
     lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(
-        optimizer_G, lr_lambda=LambdaLR(hp.n_epochs, hp.epoch, hp.decay_start_epoch).step
+        optimizer_G, lr_lambda=LambdaLR(HYPERPARAMETERS.n_epochs, HYPERPARAMETERS.epoch, HYPERPARAMETERS.decay_start_epoch).step
     )
 
     lr_scheduler_Disc_A = torch.optim.lr_scheduler.LambdaLR(
         optimizer_Disc_A,
-        lr_lambda=LambdaLR(hp.n_epochs, hp.epoch, hp.decay_start_epoch).step,
+        lr_lambda=LambdaLR(HYPERPARAMETERS.n_epochs, HYPERPARAMETERS.epoch, HYPERPARAMETERS.decay_start_epoch).step,
     )
 
     lr_scheduler_Disc_B = torch.optim.lr_scheduler.LambdaLR(
         optimizer_Disc_B,
-        lr_lambda=LambdaLR(hp.n_epochs, hp.epoch, hp.decay_start_epoch).step,
+        lr_lambda=LambdaLR(HYPERPARAMETERS.n_epochs, HYPERPARAMETERS.epoch, HYPERPARAMETERS.decay_start_epoch).step,
     )
 
     logging.info("Starting training")
@@ -490,10 +458,10 @@ if __name__ == "__main__":
         Disc_A=Disc_A,
         Disc_B=Disc_B,
         train_dataloader=train_dataloader,
-        n_epochs=hp.n_epochs,
+        n_epochs=HYPERPARAMETERS.n_epochs,
         criterion_identity=criterion_identity,
         criterion_cycle=criterion_cycle,
-        lambda_cyc=hp.lambda_cyc,
+        lambda_cyc=HYPERPARAMETERS.lambda_cyc,
         criterion_GAN=criterion_GAN,
         optimizer_G=optimizer_G,
         fake_A_buffer=fake_A_buffer,
@@ -502,6 +470,6 @@ if __name__ == "__main__":
         optimizer_Disc_A=optimizer_Disc_A,
         optimizer_Disc_B=optimizer_Disc_B,
         Tensor=Tensor,
-        sample_interval=hp.sample_interval,
-        lambda_id=hp.lambda_id,
+        sample_interval=HYPERPARAMETERS.sample_interval,
+        lambda_id=HYPERPARAMETERS.lambda_id,
     )

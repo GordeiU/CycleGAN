@@ -1,90 +1,72 @@
-import numpy as np
-import itertools
-import time
-import datetime
-import uuid
-
-import torchvision.transforms as transforms
-from torchvision.utils import save_image
-from torch.utils.data import DataLoader
-from torch.autograd import Variable
-from torchvision.utils import make_grid
-import torch.nn.functional as F
-import torch
-from train import Hyperparameters
-
-from matplotlib.pyplot import figure
-from IPython.display import clear_output
-
-from PIL import Image
-import matplotlib.image as mpimg
-
-from utils import *
-from cyclegan import *
-
+import argparse
 import logging
+import os
+from os.path import join as path_join
 
+import torch
+import torchvision.transforms as transforms
+from PIL import Image
+from torch.autograd import Variable
+from torchvision.utils import save_image
+
+from cyclegan import *
+from utils import *
+
+logging.getLogger().setLevel(logging.INFO)
+logging.basicConfig(format="%(asctime)s: [%(levelname)s]: %(message)s")
 
 if __name__ == "__main__":
-    if torch.cuda.is_available():
-        cuda = True
-        torch.cuda.empty_cache()
-    else:
-        cuda = False
-    logging.info("CUDA is activated" if cuda else "CUDA is not activated")
+    logging.info("CycleGAN generation started")
 
-    Tensor = torch.cuda.FloatTensor if cuda else torch.Tensor
+    parser = argparse.ArgumentParser(description='CycleGAN', formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('--obese', action='store_true')
+    parser.add_argument('--overweight', action='store_true')
 
-    hp = Hyperparameters(
-        epoch=0,
-        n_epochs=150,
-        dataset_train_mode="train",
-        dataset_test_mode="test",
-        batch_size=4,
-        lr=0.0002,
-        decay_start_epoch=125,
-        b1=0.5,
-        b2=0.999,
-        n_cpu=8,
-        img_size=128,
-        channels=3,
-        n_critic=5,
-        sample_interval=100,
-        num_residual_blocks=19,
-        lambda_cyc=10.0,
-        lambda_id=5.0,
-    )
+    args = parser.parse_args()
 
-    input_shape = (hp.channels, hp.img_size, hp.img_size)
+    input_shape = (HYPERPARAMETERS.channels, HYPERPARAMETERS.img_size, HYPERPARAMETERS.img_size)
 
-    Gen_AB = GeneratorResNet(input_shape, hp.num_residual_blocks, "Gen_AB")
-    Gen_AB.load_state_dict(torch.load(os.path.join(".", "model", "Gen_AB.dat"), map_location=torch.device('cpu')))
-    Gen_AB.eval()
-    logging.info("Cycle GAN model loaded")
+    if args.obese:
+        logging.info("Loading normal to obese generator...")
+        Gen_normal_to_obese = GeneratorResNet(input_shape, HYPERPARAMETERS.num_residual_blocks)
+        Gen_normal_to_obese.load_state_dict(torch.load(path_join(".", "models", "Gen_normal_to_obese.dat"), map_location=torch.device('cpu')))
+        Gen_normal_to_obese.eval()
+        logging.info("Loaded normal to obese generator")
+
+    if args.overweight:
+        logging.info("Loading normal to overweight generator...")
+        # Gen_normal_to_overweight = GeneratorResNet(input_shape, HYPERPARAMETERS.num_residual_blocks)
+        # Gen_normal_to_overweight.load_state_dict(torch.load(path_join(".", "models", "Gen_normal_to_overweight.dat"), map_location=torch.device('cpu')))
+        # Gen_normal_to_overweight.eval()
+        logging.info("Loaded normal to overweight generator")
+
+    Tensor = torch.Tensor
 
     transform = transforms.Compose([
-        transforms.Resize((hp.img_size, hp.img_size), Image.BICUBIC),
+        transforms.Resize((HYPERPARAMETERS.img_size, HYPERPARAMETERS.img_size), Image.BICUBIC),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    img = Image.open(os.path.join(".", "images", "test_image_0.jpg"))
+    img = Image.open(path_join(".", "images", "test_image_0.jpg"))
     img = transform(img)
     img = Variable(img.type(Tensor)).to(device='cpu')
     img = img.unsqueeze(0)
+    logging.info("Image prepared for CycleGAN")
 
-    result = Gen_AB(img)
-    logging.info("Image transformed")
+    if not os.path.exists(TMP_STORAGE):
+        create_path(TMP_STORAGE)
+        create_path(TMP_STORAGE_OBESE)
+        create_path(TMP_STORAGE_OVERWEIGHT)
 
-    result_dir = os.path.join(".", "result")
+        logging.info("Created a .tmp dir for results")
 
-    if not os.path.isdir(result_dir):
-        logging.info(f"Result dir created at: {result_dir}")
-        os.mkdir(result_dir)
+    if args.obese:
+        obese = Gen_normal_to_obese(img)
+        save_image(obese, path_join(TMP_STORAGE_OBESE, 'test.jpg'), normalize=True)
+        logging.info("Generated obese image")
 
-    try:
-        result_file_name = os.path.join(result_dir, "test_image_obese_0.jpg")
-        save_image(result, result_file_name, normalize=True)
-        logging.info(f"Result image saved to {result_file_name}")
-    except Exception as e:
-        logging.error(f"While saving result image: {e}")
+    if args.overweight:
+        # overweight = Gen_normal_to_overweight(img)
+        # save_image(overweight, path_join(TMP_STORAGE_OBESE, 'test.jpg'), normalize=True)
+        logging.info("Generated overweight image")

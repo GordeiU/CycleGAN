@@ -1,22 +1,21 @@
-import os
-import numpy as np
-
-import torchvision.transforms as transforms
-from torch.autograd import Variable
-
-import torch.nn as nn
-import torch.nn.functional as F
-import torch
-
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import figure
-
-import glob
-import random
-from torch.utils.data import Dataset
-from PIL import Image
-
 import logging
+import os
+import random
+
+import torch
+import torch.nn as nn
+import torchvision.transforms as transforms
+from PIL import Image
+from torch.autograd import Variable
+from torch.utils.data import Dataset
+
+logging.getLogger().setLevel(logging.INFO)
+logging.basicConfig(format="%(asctime)s: [%(levelname)s]: %(message)s")
+
+TMP_STORAGE = os.path.join(".", ".tmp")
+TMP_STORAGE_OBESE = os.path.join(TMP_STORAGE, "obese")
+TMP_STORAGE_OVERWEIGHT = os.path.join(TMP_STORAGE, "overweight")
+
 
 ########################################################
 # Methods for Image DataLoader
@@ -24,6 +23,39 @@ import logging
 
 TRAINED_MODEL_EXT = '.dat'
 TRAINED_MODEL_FORMAT = "{}" + TRAINED_MODEL_EXT
+
+
+##############################################
+# Defining all hyperparameters
+##############################################
+
+class Hyperparameters(object):
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+HYPERPARAMETERS = Hyperparameters(
+    epoch=0,
+    n_epochs=150,
+    dataset_train_mode="train",
+    dataset_test_mode="test",
+    batch_size=4,
+    lr=0.0002,
+    decay_start_epoch=125,
+    b1=0.5,
+    b2=0.999,
+    n_cpu=8,
+    img_size=128,
+    channels=3,
+    n_critic=5,
+    sample_interval=100,
+    num_residual_blocks=19,
+    lambda_cyc=10.0,
+    lambda_id=5.0,
+)
+
+def create_path(path):
+    if not os.path.exists(path):
+        os.mkdir(path)
 
 def convert_to_rgb(image):
     rgb_image = Image.new("RGB", image.size)
@@ -132,9 +164,9 @@ class LambdaLR:
 def initialize_conv_weights_normal(m):
     classname = m.__class__.__name__
     if classname.find("Conv") != -1:
-        torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
+        nn.init.normal_(m.weight.data, 0.0, 0.02)
         if hasattr(m, "bias") and m.bias is not None:
-            torch.nn.init.constant_(m.bias.data, 0.0)
+            nn.init.constant_(m.bias.data, 0.0)
     elif classname.find("BatchNorm2d") != -1:
-        torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
-        torch.nn.init.constant_(m.bias.data, 0.0)
+        nn.init.normal_(m.weight.data, 1.0, 0.02)
+        nn.init.constant_(m.bias.data, 0.0)
