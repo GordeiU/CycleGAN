@@ -69,9 +69,9 @@ if __name__ == "__main__":
 
     if args.overweight:
         logging.info("Loading normal to overweight generator...")
-        # Gen_normal_to_overweight = GeneratorResNet(input_shape, HYPERPARAMETERS.num_residual_blocks)
-        # Gen_normal_to_overweight.load_state_dict(torch.load(path_join(".", "models", "Gen_normal_to_overweight.dat"), map_location=torch.device('cpu')))
-        # Gen_normal_to_overweight.eval()
+        Gen_normal_to_overweight = GeneratorResNet(input_shape, HYPERPARAMETERS.num_residual_blocks)
+        Gen_normal_to_overweight.load_state_dict(torch.load(path_join(".", "models", "Gen_normal_to_obese.dat"), map_location=torch.device('cpu')))  #TODO: Put normal model for overweight
+        Gen_normal_to_overweight.eval()
         logging.info("Loaded normal to overweight generator")
 
     Tensor = torch.Tensor
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     if args.image_dir:
         for file_name in os.listdir(os.path.join(args.image_dir)):
-            generate_images(path_join(args.image_dir, file_name), args.obese, args.overweight, Gen_normal_to_obese, Gen_normal_to_obese) #TODO: Put normal model for overweight
+            generate_images(path_join(args.image_dir, file_name), args.obese, args.overweight, Gen_normal_to_obese, Gen_normal_to_overweight)
 
     if args.clean:
         os.system('rm -rf ' + TMP_STORAGE)
