@@ -35,7 +35,6 @@ class ResidualBlock(nn.Module):
     def forward(self, x):
         return x + self.block(x)
 
-
 ##############################################
 # Generator
 ##############################################
@@ -44,7 +43,6 @@ class ResidualBlock(nn.Module):
 c7s1-64,d128,d256,R256,R256,R256, R256,R256,R256,R256,R256,R256,
 u128, u64,c7s1-3
 """
-
 
 class GeneratorResNet(nn.Module):
     def __init__(self, input_shape, num_residual_blocks, name="Generator"):
