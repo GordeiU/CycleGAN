@@ -52,7 +52,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.image:
-        raise NotImplementedError
+        if not os.path.isfile(args.image):
+            raise ValueError(f"{args.image} is not a file")
+
+        extension = args.image.split('.')[-1]
+        if extension != "jpg":
+            raise TypeError(f"Unsupported type {extension} the only supported type is jpg")
 
     if args.image_dir:
         if not os.path.isdir(args.image_dir):
@@ -90,6 +95,9 @@ if __name__ == "__main__":
     create_path(TMP_STORAGE_OVERWEIGHT)
 
     logging.info("Created a .tmp dir for results")
+
+    if args.image:
+        generate_images(path_join(args.image), args.obese, args.overweight, Gen_normal_to_obese, Gen_normal_to_overweight)
 
     if args.image_dir:
         for file_name in os.listdir(os.path.join(args.image_dir)):
