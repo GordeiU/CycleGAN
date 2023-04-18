@@ -15,14 +15,48 @@ from utils import *
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(format="%(asctime)s: [%(levelname)s]: %(message)s")
 
+def generate_images(image_path,
+                    obese: bool,
+                    overweight: bool,
+                    Gen_normal_to_obese: GeneratorResNet,
+                    Gen_normal_to_overweight: GeneratorResNet):
+    file_name = os.path.basename(image_path)
+    img = Image.open(image_path)
+    img = transform(img)
+    img = Variable(img.type(Tensor)).to(device='cpu')
+    img = img.unsqueeze(0)
+    logging.info("Image prepared for CycleGAN")
+
+    if obese:
+        obese_image = Gen_normal_to_obese(img)
+        save_image(obese_image, path_join(TMP_STORAGE_OBESE, file_name), normalize=True)
+        logging.info("Generated obese image")
+
+    if overweight:
+        overweight_image = Gen_normal_to_overweight(img)
+        save_image(overweight_image, path_join(TMP_STORAGE_OVERWEIGHT, file_name), normalize=True)
+        logging.info("Generated overweight image")
+
 if __name__ == "__main__":
     logging.info("CycleGAN generation started")
 
     parser = argparse.ArgumentParser(description='CycleGAN', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--obese', action='store_true')
     parser.add_argument('--overweight', action='store_true')
+    parser.add_argument('--clean', action='store_true')
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--image', type=str, help='Path to the image file')
+    group.add_argument('--image-dir-path', type=str, dest='image_dir', help='Path to the image dir file')
 
     args = parser.parse_args()
+
+    if args.image:
+        raise NotImplementedError
+
+    if args.image_dir:
+        if not os.path.isdir(args.image_dir):
+            raise NameError(f"Given path does not exist: {args.image_dir}")
 
     input_shape = (HYPERPARAMETERS.channels, HYPERPARAMETERS.img_size, HYPERPARAMETERS.img_size)
 
@@ -48,25 +82,19 @@ if __name__ == "__main__":
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    img = Image.open(path_join(".", "images", "test_image_0.jpg"))
-    img = transform(img)
-    img = Variable(img.type(Tensor)).to(device='cpu')
-    img = img.unsqueeze(0)
-    logging.info("Image prepared for CycleGAN")
+    if os.path.exists(TMP_STORAGE):
+        os.system('rm -rf ' + TMP_STORAGE)
 
-    if not os.path.exists(TMP_STORAGE):
-        create_path(TMP_STORAGE)
-        create_path(TMP_STORAGE_OBESE)
-        create_path(TMP_STORAGE_OVERWEIGHT)
+    create_path(TMP_STORAGE)
+    create_path(TMP_STORAGE_OBESE)
+    create_path(TMP_STORAGE_OVERWEIGHT)
 
-        logging.info("Created a .tmp dir for results")
+    logging.info("Created a .tmp dir for results")
 
-    if args.obese:
-        obese = Gen_normal_to_obese(img)
-        save_image(obese, path_join(TMP_STORAGE_OBESE, 'test.jpg'), normalize=True)
-        logging.info("Generated obese image")
+    if args.image_dir:
+        for file_name in os.listdir(os.path.join(args.image_dir)):
+            generate_images(path_join(args.image_dir, file_name), args.obese, args.overweight, Gen_normal_to_obese, Gen_normal_to_obese) #TODO: Put normal model for overweight
 
-    if args.overweight:
-        # overweight = Gen_normal_to_overweight(img)
-        # save_image(overweight, path_join(TMP_STORAGE_OBESE, 'test.jpg'), normalize=True)
-        logging.info("Generated overweight image")
+    if args.clean:
+        os.system('rm -rf ' + TMP_STORAGE)
+        logging.info("Cleaned the tmp directory")
