@@ -65,6 +65,7 @@ if __name__ == "__main__":
 
     input_shape = (HYPERPARAMETERS.channels, HYPERPARAMETERS.img_size, HYPERPARAMETERS.img_size)
 
+    #TODO: Potentially update the paths to models to be args in the arg parse
     if args.obese:
         logging.info("Loading normal to obese generator...")
         Gen_normal_to_obese = GeneratorResNet(input_shape, HYPERPARAMETERS.num_residual_blocks)
