@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import itertools
 import logging
@@ -327,6 +328,31 @@ def train(
 ##############################################
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='CycleGAN', formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('--normal_image_path', default="./data/normal", dest='normal_path', type=str)
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--obese', action='store_true')
+    group.add_argument('--overweight', action='store_true')
+
+    parser.add_argument('--obese-path', default='./data/obese', type=str, dest='obese_path', help='Path to the obese image file')
+    parser.add_argument('--overweight-path', default='./data/overweight', type=str, dest='overweight_path', help='Path to the image dir file')
+
+    args = parser.parse_args()
+
+    normal_data_dir = os.path.join(args.normal_path)
+
+    if args.obese:
+        target_data_dir = os.path.join(args.obese_path)
+
+    if args.overweight:
+        target_data_dir = os.path.join(args.obese_path)
+
+    ##############################################
+    logging.info("Dataset paths set")
+    ##############################################
+
     if torch.cuda.is_available():
         cuda = True
         torch.cuda.empty_cache()
@@ -340,13 +366,6 @@ if __name__ == "__main__":
     Tensor = torch.cuda.FloatTensor if cuda else torch.Tensor
 
     ##############################################
-    logging.info("Setting Root Path for Dataset")
-    ##############################################
-
-    # Root Path for dataset
-    root_path = os.path.join(".", "data")
-
-    ##############################################
     logging.info("Defining Image Transforms to apply")
     ##############################################
     transforms_ = [
@@ -356,13 +375,13 @@ if __name__ == "__main__":
     ]
 
     train_dataloader = DataLoader(
-        ImageDataset(root_path, mode=HYPERPARAMETERS.dataset_train_mode, transforms_=transforms_),
+        ImageDataset(normal_data_dir, target_data_dir, mode=HYPERPARAMETERS.dataset_train_mode, transforms_=transforms_),
         batch_size=HYPERPARAMETERS.batch_size,
         shuffle=True,
         num_workers=1,
     )
     val_dataloader = DataLoader(
-        ImageDataset(root_path, mode=HYPERPARAMETERS.dataset_test_mode, transforms_=transforms_),
+        ImageDataset(normal_data_dir, target_data_dir, mode=HYPERPARAMETERS.dataset_test_mode, transforms_=transforms_),
         batch_size=16,
         shuffle=True,
         num_workers=1,

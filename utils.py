@@ -63,13 +63,12 @@ def convert_to_rgb(image):
     return rgb_image
 
 class ImageDataset(Dataset):
-    def __init__(self, root, transforms_=None, unaligned=False, mode="train"):
-        logging.info(os.path.join(root, "normal"))
+    def __init__(self, normal_data_dir, target_data_dir, transforms_=None, unaligned=False, mode="train"):
         self.transform = transforms.Compose(transforms_)
         self.unaligned = unaligned
 
-        self.files_A = sorted([os.path.join(root, "normal", file_name) for file_name in os.listdir(os.path.join(root, "normal"))])
-        self.files_B = sorted([os.path.join(root, "obese", file_name) for file_name in os.listdir(os.path.join(root, "obese"))])
+        self.files_A = sorted([os.path.join(normal_data_dir, file_name) for file_name in os.listdir(normal_data_dir)])
+        self.files_B = sorted([os.path.join(target_data_dir, file_name) for file_name in os.listdir(target_data_dir)])
 
         logging.info(f"self.files_A has: {len(self.files_A)} files")
         logging.info(f"self.files_B has: {len(self.files_B)} files")
