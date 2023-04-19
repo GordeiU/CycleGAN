@@ -12,10 +12,12 @@ from torch.utils.data import Dataset
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(format="%(asctime)s: [CycleGAN] [%(levelname)s]: %(message)s")
 
-TMP_STORAGE = os.path.join(".", ".tmp")
+TMP_STORAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".tmp")
 TMP_STORAGE_OBESE = os.path.join(TMP_STORAGE, "obese")
 TMP_STORAGE_OVERWEIGHT = os.path.join(TMP_STORAGE, "overweight")
+TMP_STORAGE_NORMAL = os.path.join(TMP_STORAGE, "normal")
 
+IMAGES_PER_ROW = 5
 
 ########################################################
 # Methods for Image DataLoader
