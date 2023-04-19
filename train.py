@@ -340,6 +340,7 @@ if __name__ == "__main__":
     parser.add_argument('--overweight-path', default='./data/overweight', type=str, dest='overweight_path', help='Path to the image dir file')
 
     parser.add_argument('--model-path', dest='model_path', type=str, required=False)
+    parser.add_argument('--epochs', type=int, required=False)
 
     args = parser.parse_args()
 
@@ -490,7 +491,7 @@ if __name__ == "__main__":
         Disc_A=Disc_A,
         Disc_B=Disc_B,
         train_dataloader=train_dataloader,
-        n_epochs=HYPERPARAMETERS.n_epochs,
+        n_epochs=args.epochs,
         criterion_identity=criterion_identity,
         criterion_cycle=criterion_cycle,
         lambda_cyc=HYPERPARAMETERS.lambda_cyc,
