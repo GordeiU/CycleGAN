@@ -76,7 +76,7 @@ if __name__ == "__main__":
     if args.overweight:
         logging.info("Loading normal to overweight generator...")
         Gen_normal_to_overweight = GeneratorResNet(input_shape, HYPERPARAMETERS.num_residual_blocks)
-        Gen_normal_to_overweight.load_state_dict(torch.load(path_join(".", "models", "Gen_normal_to_obese.dat"), map_location=torch.device('cpu')))  #TODO: Put normal model for overweight
+        Gen_normal_to_overweight.load_state_dict(torch.load(path_join(".", "models", "Gen_normal_to_overweight.dat"), map_location=torch.device('cpu')))
         Gen_normal_to_overweight.eval()
         logging.info("Loaded normal to overweight generator")
 
