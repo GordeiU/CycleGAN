@@ -339,6 +339,8 @@ if __name__ == "__main__":
     parser.add_argument('--obese-path', default='./data/obese', type=str, dest='obese_path', help='Path to the obese image file')
     parser.add_argument('--overweight-path', default='./data/overweight', type=str, dest='overweight_path', help='Path to the image dir file')
 
+    parser.add_argument('--model-path', dest='model_path', type=str, required=False)
+
     args = parser.parse_args()
 
     normal_data_dir = os.path.join(args.normal_path)
@@ -424,12 +426,23 @@ if __name__ == "__main__":
     logging.info("Initializing weights")
     ##############################################
 
-    Gen_AB.apply(initialize_conv_weights_normal)
-    Gen_BA.apply(initialize_conv_weights_normal)
+    if args.model_path:
+        weights_path = os.path.join(args.model_path)
+        d = torch.device("cuda" if cuda else "cpu")
+        Gen_AB.load_state_dict(torch.load(os.path.join(weights_path, "Gen_AB.dat"), map_location=d))
+        Gen_BA.load_state_dict(torch.load(os.path.join(weights_path, "Gen_BA.dat"), map_location=d))
+        Disc_A.load_state_dict(torch.load(os.path.join(weights_path, "Disc_A.dat"), map_location=d))
+        Disc_B.load_state_dict(torch.load(os.path.join(weights_path, "Disc_B.dat"), map_location=d))
 
-    Disc_A.apply(initialize_conv_weights_normal)
-    Disc_B.apply(initialize_conv_weights_normal)
+        logging.info("Initialized weights from the model path")
+    else:
+        Gen_AB.apply(initialize_conv_weights_normal)
+        Gen_BA.apply(initialize_conv_weights_normal)
 
+        Disc_A.apply(initialize_conv_weights_normal)
+        Disc_B.apply(initialize_conv_weights_normal)
+
+        logging.info("Initialized random weights")
 
     ##############################################
     logging.info("Buffers of previously generated samples")
