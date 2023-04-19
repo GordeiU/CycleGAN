@@ -21,7 +21,7 @@ from cyclegan import *
 from utils import *
 
 logging.getLogger().setLevel(logging.INFO)
-logging.basicConfig(format="%(asctime)s: [%(levelname)s]: %(message)s")
+logging.basicConfig(format="%(asctime)s: [CycleGAN] [%(levelname)s]: %(message)s")
 
 ########################################################
 # Methods for Image Visualization

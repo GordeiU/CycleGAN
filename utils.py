@@ -10,7 +10,7 @@ from torch.autograd import Variable
 from torch.utils.data import Dataset
 
 logging.getLogger().setLevel(logging.INFO)
-logging.basicConfig(format="%(asctime)s: [%(levelname)s]: %(message)s")
+logging.basicConfig(format="%(asctime)s: [CycleGAN] [%(levelname)s]: %(message)s")
 
 TMP_STORAGE = os.path.join(".", ".tmp")
 TMP_STORAGE_OBESE = os.path.join(TMP_STORAGE, "obese")

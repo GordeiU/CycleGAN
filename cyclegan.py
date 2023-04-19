@@ -9,7 +9,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 
 logging.getLogger().setLevel(logging.INFO)
-logging.basicConfig(format="%(asctime)s: [%(levelname)s]: %(message)s")
+logging.basicConfig(format="%(asctime)s: [CycleGAN] [%(levelname)s]: %(message)s")
 
 ##############################################
 # Residual block with two convolution layers.
